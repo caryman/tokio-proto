@@ -62,7 +62,7 @@ impl<P, T, B> BindClient<StreamingMultiplex<B>, T> for P where
     type BindClient = ClientProxy<Self::ServiceRequest, Self::ServiceResponse, Self::ServiceError>;
 
     fn bind_client<E>(&self, executor: &E, io: T) -> Self::BindClient
-        where E: Executor<Box<Future<Item = (), Error = ()>>>
+        where E: Executor<Box<dyn Future<Item = (), Error = ()>>>
     {
         let (client, rx) = client_proxy::pair();
 

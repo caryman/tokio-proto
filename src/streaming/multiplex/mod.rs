@@ -46,23 +46,23 @@ pub trait Transport<ReadBody>: 'static +
     fn tick(&mut self) {}
 
     /// Cancel interest in the exchange identified by RequestId
-    fn cancel(&mut self, request_id: RequestId) -> io::Result<()> {
-        drop(request_id);
+    fn cancel(&mut self, _request_id: RequestId) -> io::Result<()> {
+        //let _ = drop(request_id);  // TCK drop does nothing on value that implemements copy
         Ok(())
     }
 
     /// Tests to see if this I/O object may accept a body frame for the given
     /// request ID
-    fn poll_write_body(&mut self, id: RequestId) -> Async<()> {
-        drop(id);
+    fn poll_write_body(&mut self, _id: RequestId) -> Async<()> {
+        //let _ = drop(id); // TCK drop does nothing on value that implemements copy
         Async::Ready(())
     }
 
     /// Invoked before the multiplexer dispatches the body chunk to the body
     /// stream.
-    fn dispatching_body(&mut self, id: RequestId, body: &ReadBody) {
-        drop(id);
-        drop(body);
+    fn dispatching_body(&mut self, _id: RequestId, _body: &ReadBody) {
+        //let _ = drop(id); // TCK drop does nothing on value that implemements copy
+        //let _ = drop(body); // TCK drop does nothing on value that implemements copy
     }
 }
 

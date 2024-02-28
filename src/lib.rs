@@ -239,7 +239,7 @@ pub trait BindServer<Kind, T: 'static>: 'static {
         where S: Service<Request = Self::ServiceRequest,
                          Response = Self::ServiceResponse,
                          Error = Self::ServiceError> + 'static,
-              E: Executor<Box<Future<Item = (), Error = ()>>>;
+              E: Executor<Box<dyn Future<Item = (), Error = ()>>>;
 }
 
 /// Binds an I/O object as a client of a service.
@@ -275,5 +275,5 @@ pub trait BindClient<Kind, T: 'static>: 'static {
 
     /// Bind an I/O object as a service.
     fn bind_client<E>(&self, executor: &E, io: T) -> Self::BindClient
-        where E: Executor<Box<Future<Item = (), Error = ()>>>;
+        where E: Executor<Box<dyn Future<Item = (), Error = ()>>>;
 }

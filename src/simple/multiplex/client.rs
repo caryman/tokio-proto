@@ -59,7 +59,7 @@ impl<T: 'static, P: ClientProto<T>> BindClient<Multiplex, T> for P {
     type BindClient = ClientService<T, P>;
 
     fn bind_client<E>(&self, executor: &E, io: T) -> Self::BindClient
-        where E: Executor<Box<Future<Item = (), Error = ()>>>,
+        where E: Executor<Box<dyn Future<Item = (), Error = ()>>>,
     {
         ClientService {
             inner: BindClient::<StreamingMultiplex<MyStream<io::Error>>, T>::bind_client(

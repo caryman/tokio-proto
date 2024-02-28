@@ -66,7 +66,7 @@ impl<P, T, B> BindServer<super::StreamingPipeline<B>, T> for P where
         where S: Service<Request = Self::ServiceRequest,
                          Response = Self::ServiceResponse,
                          Error = Self::ServiceError> + 'static,
-              E: Executor<Box<Future<Item = (), Error = ()>>>
+              E: Executor<Box<dyn Future<Item = (), Error = ()>>>
     {
         let task = self.bind_transport(io).into_future().and_then(|transport| {
             let dispatch: Dispatch<S, T, P> = Dispatch {

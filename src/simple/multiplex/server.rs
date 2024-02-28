@@ -61,7 +61,7 @@ impl<T: 'static, P: ServerProto<T>> BindServer<Multiplex, T> for P {
         where S: Service<Request = Self::ServiceRequest,
                          Response = Self::ServiceResponse,
                          Error = Self::ServiceError> + 'static,
-              E: Executor<Box<Future<Item = (), Error = ()>>>
+              E: Executor<Box<dyn Future<Item = (), Error = ()>>>
     {
         BindServer::<StreamingMultiplex<MyStream<io::Error>>, T>::bind_server(
             LiftProto::from_ref(self), executor, io, LiftService(service)

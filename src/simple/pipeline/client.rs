@@ -58,7 +58,7 @@ impl<T: 'static, P: ClientProto<T>> BindClient<Pipeline, T> for P {
     type BindClient = ClientService<T, P>;
 
     fn bind_client<E>(&self, executor: &E, io: T) -> Self::BindClient
-        where E: Executor<Box<Future<Item = (), Error = ()>>>,
+        where E: Executor<Box<dyn Future<Item = (), Error = ()>>>,
     {
         ClientService {
             inner: BindClient::<StreamingPipeline<MyStream<io::Error>>, T>::bind_client(
