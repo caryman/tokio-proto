@@ -27,7 +27,7 @@ mod lift {
     use std::marker::PhantomData;
 
     use super::RequestId;
-    use streaming::multiplex::{Frame, Transport};
+    use crate::streaming::multiplex::{Frame, Transport};
     use futures::{Future, Stream, Sink, StartSend, Poll, Async, AsyncSink};
 
     // Lifts an implementation of RPC-style transport to streaming-style transport
@@ -71,7 +71,7 @@ mod lift {
                       -> StartSend<Self::SinkItem, io::Error> {
             if let Frame::Message { message, id, body, solo } = request {
                 if !body && !solo {
-                    match try!(self.0.start_send((id, message))) {
+                    match self.0.start_send((id, message))? {
                         AsyncSink::Ready => return Ok(AsyncSink::Ready),
                         AsyncSink::NotReady((id, msg)) => {
                             let msg = Frame::Message {

@@ -1,8 +1,8 @@
 use super::{Frame, RequestId, Transport};
 use super::advanced::{Multiplex, MultiplexMessage};
 
-use BindServer;
-use streaming::{Message, Body};
+use crate::BindServer;
+use crate::streaming::{Message, Body};
 use tokio_service::Service;
 use futures::{Future, Poll, Async};
 use futures::{IntoFuture, Stream};

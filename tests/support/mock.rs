@@ -155,7 +155,7 @@ impl Write for MockIo {
 
 impl Io for MockIo {}
 
-pub type MockBodyStream = Box<Stream<Item = u32, Error = io::Error> + Send>;
+pub type MockBodyStream = Box<dyn Stream<Item = u32, Error = io::Error> + Send>;
 
 pub struct MockTransportCtl<T> {
     tx: Option<mpsc::UnboundedSender<io::Result<T>>>,
@@ -211,12 +211,12 @@ impl Drop for CompleteOnDrop {
 
 pub fn pipeline_client()
     -> (MockTransportCtl<pipeline::Frame<&'static str, u32, io::Error>>,
-        Box<Service<Request = Message<&'static str, MockBodyStream>,
+        Box<dyn Service<Request = Message<&'static str, MockBodyStream>,
                     Response = Message<&'static str, Body<u32, io::Error>>,
                     Error = io::Error,
                     Future = Response<Message<&'static str, Body<u32, io::Error>>,
                                               io::Error>>>,
-        Box<Any>)
+        Box<dyn Any>)
 {
     drop(env_logger::init());
 
@@ -243,7 +243,7 @@ pub fn pipeline_client()
 }
 
 pub fn pipeline_server<S>(s: S)
-    -> (MockTransportCtl<pipeline::Frame<&'static str, u32, io::Error>>, Box<Any>)
+    -> (MockTransportCtl<pipeline::Frame<&'static str, u32, io::Error>>, Box<dyn Any>)
     where S: Service<Request = Message<&'static str, Body<u32, io::Error>>,
                      Response = Message<&'static str, MockBodyStream>,
                      Error = io::Error> + Send + 'static,
@@ -270,12 +270,12 @@ pub fn pipeline_server<S>(s: S)
 
 pub fn multiplex_client()
     -> (MockTransportCtl<multiplex::Frame<&'static str, u32, io::Error>>,
-        Box<Service<Request = Message<&'static str, MockBodyStream>,
+        Box<dyn Service<Request = Message<&'static str, MockBodyStream>,
                     Response = Message<&'static str, Body<u32, io::Error>>,
                     Error = io::Error,
                     Future = Response<Message<&'static str, Body<u32, io::Error>>,
                                               io::Error>>>,
-        Box<Any>)
+        Box<dyn Any>)
 {
     drop(env_logger::init());
 
@@ -302,7 +302,7 @@ pub fn multiplex_client()
 }
 
 pub fn multiplex_server<S>(s: S)
-    -> (MockTransportCtl<multiplex::Frame<&'static str, u32, io::Error>>, Box<Any>)
+    -> (MockTransportCtl<multiplex::Frame<&'static str, u32, io::Error>>, Box<dyn Any>)
     where S: Service<Request = Message<&'static str, Body<u32, io::Error>>,
                      Response = Message<&'static str, MockBodyStream>,
                      Error = io::Error> + Send + 'static,

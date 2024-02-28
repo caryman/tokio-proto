@@ -1,9 +1,9 @@
 use super::{Frame, RequestId, StreamingMultiplex, Transport};
 use super::advanced::{Multiplex, MultiplexMessage};
 
-use BindClient;
-use streaming::{Body, Message};
-use util::client_proxy::{self, ClientProxy, Receiver};
+use crate::BindClient;
+use crate::streaming::{Body, Message};
+use crate::util::client_proxy::{self, ClientProxy, Receiver};
 use futures::{Future, IntoFuture, Poll, Async, Stream};
 use futures::sync::oneshot;
 use futures::future::Executor;

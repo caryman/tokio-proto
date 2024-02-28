@@ -45,7 +45,7 @@ impl<S: Sink> BufferOne<S> {
 
     fn try_empty_buffer(&mut self) -> Poll<(), S::SinkError> {
         if let Some(buf) = self.buf.take() {
-            if let AsyncSink::NotReady(buf) = try!(self.sink.start_send(buf)) {
+            if let AsyncSink::NotReady(buf) = self.sink.start_send(buf)? {
                 self.buf = Some(buf);
                 return Ok(Async::NotReady);
             }
@@ -74,11 +74,11 @@ impl<S: Sink> Sink for BufferOne<S> {
     type SinkError = S::SinkError;
 
     fn start_send(&mut self, item: Self::SinkItem) -> StartSend<Self::SinkItem, Self::SinkError> {
-        if !try!(self.try_empty_buffer()).is_ready() {
+        if !(self.try_empty_buffer())?.is_ready() {
             return Ok(AsyncSink::NotReady(item));
         }
 
-        if let AsyncSink::NotReady(item) = try!(self.sink.start_send(item)) {
+        if let AsyncSink::NotReady(item) = self.sink.start_send(item)? {
             self.buf = Some(item);
         }
 
@@ -86,8 +86,8 @@ impl<S: Sink> Sink for BufferOne<S> {
     }
 
     fn poll_complete(&mut self) -> Poll<(), Self::SinkError> {
-        let mut flushed = try!(self.try_empty_buffer()).is_ready();
-        flushed &= try!(self.sink.poll_complete()).is_ready();
+        let mut flushed = self.try_empty_buffer()?.is_ready();
+        flushed &= self.sink.poll_complete()?.is_ready();
 
         if flushed {
             Ok(Async::Ready(()))

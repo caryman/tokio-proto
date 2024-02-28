@@ -1,12 +1,12 @@
 use std::io;
 use std::marker;
 
-use BindServer;
+use crate::BindServer;
 use super::Pipeline;
 use super::lift::{LiftBind, LiftTransport};
-use simple::LiftProto;
+use crate::simple::LiftProto;
 
-use streaming::{self, Message};
+use crate::streaming::{self, Message};
 use streaming::pipeline::StreamingPipeline;
 use tokio_service::Service;
 use futures::{stream, Stream, Sink, Future, IntoFuture, Poll};

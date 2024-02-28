@@ -1,8 +1,8 @@
-use BindClient;
-use streaming::{Body, Message};
+use crate::BindClient;
+use crate::streaming::{Body, Message};
 use super::{StreamingPipeline, Frame, Transport};
 use super::advanced::{Pipeline, PipelineMessage};
-use util::client_proxy::{self, ClientProxy, Receiver};
+use crate::util::client_proxy::{self, ClientProxy, Receiver};
 use futures::{Future, IntoFuture, Poll, Async, Stream};
 use futures::sync::oneshot;
 use futures::future::Executor;

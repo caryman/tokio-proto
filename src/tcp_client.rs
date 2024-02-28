@@ -3,7 +3,7 @@ use std::sync::Arc;
 use std::net::SocketAddr;
 use std::marker::PhantomData;
 
-use BindClient;
+use crate::BindClient;
 use tokio_core::reactor::Handle;
 use tokio_core::net::{TcpStream, TcpStreamNew};
 use futures::{Future, Poll, Async};

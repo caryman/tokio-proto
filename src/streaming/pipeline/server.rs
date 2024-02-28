@@ -1,10 +1,10 @@
-use BindServer;
+use crate::BindServer;
 use futures::stream::Stream;
 use futures::{Future, IntoFuture, Poll, Async};
 use futures::future::Executor;
 use std::collections::VecDeque;
 use std::io;
-use streaming::{Message, Body};
+use crate::streaming::{Message, Body};
 use super::advanced::{Pipeline, PipelineMessage};
 use super::{Frame, Transport};
 use tokio_service::Service;

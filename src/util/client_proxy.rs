@@ -11,7 +11,7 @@
 // that seems to be fixed on nightly.
 #![allow(warnings)]
 
-use streaming::Message;
+use crate::streaming::Message;
 use tokio_service::Service;
 use futures::{Future, Async, Poll, Stream, AsyncSink, Sink};
 use futures::sync::mpsc;

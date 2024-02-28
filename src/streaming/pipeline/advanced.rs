@@ -8,9 +8,9 @@
 use futures::sync::mpsc;
 use futures::{Future, Poll, Async, Stream, Sink, AsyncSink, StartSend};
 use std::{fmt, io};
-use streaming::{Message, Body};
+use crate::streaming::{Message, Body};
 use super::{Frame, Transport};
-use buffer_one::BufferOne;
+use crate::buffer_one::BufferOne;
 
 // TODO:
 //
@@ -121,8 +121,8 @@ impl<T> Pipeline<T> where T: Dispatch {
                 break;
             }
 
-            if let Async::Ready(frame) = try!(self.dispatch.get_mut().inner.transport().poll()) {
-                try!(self.process_out_frame(frame));
+            if let Async::Ready(frame) = self.dispatch.get_mut().inner.transport().poll()? {
+                self.process_out_frame(frame)?;
             } else {
                 break;
             }
@@ -176,7 +176,7 @@ impl<T> Pipeline<T> where T: Dispatch {
                 match chunk {
                     Some(chunk) => {
                         trace!("read out body chunk");
-                        try!(self.process_out_body_chunk(chunk));
+                        self.process_out_body_chunk(chunk)?;
                     }
                     None => {
                         trace!("read out body EOF");
@@ -237,21 +237,21 @@ impl<T> Pipeline<T> where T: Dispatch {
         trace!("write_in_frames");
         while self.dispatch.poll_ready().is_ready() {
             // Ensure the current in body is fully written
-            if !try!(self.write_in_body()) {
+            if !self.write_in_body()? {
                 debug!("write in body not done");
                 break;
             }
             debug!("write in body done");
 
             // Write the next in-flight in message
-            match try!(self.dispatch.get_mut().inner.poll()) {
+            match self.dispatch.get_mut().inner.poll()? {
                 Async::Ready(Some(Ok(message))) => {
                     trace!("   --> got message");
-                    try!(self.write_in_message(Ok(message)));
+                    self.write_in_message(Ok(message))?;
                 }
                 Async::Ready(Some(Err(error))) => {
                     trace!("   --> got error");
-                    try!(self.write_in_message(Err(error)));
+                    self.write_in_message(Err(error))?;
                 }
                 Async::Ready(None) => {
                     trace!("   --> got None");
@@ -273,7 +273,7 @@ impl<T> Pipeline<T> where T: Dispatch {
             Ok(Message::WithoutBody(val)) => {
                 trace!("got in_flight value without body");
                 let msg = Frame::Message { message: val, body: false };
-                try!(assert_send(&mut self.dispatch, msg));
+                assert_send(&mut self.dispatch, msg)?;
 
                 // TODO: don't panic maybe if this isn't true?
                 assert!(self.in_body.is_none());
@@ -284,7 +284,7 @@ impl<T> Pipeline<T> where T: Dispatch {
             Ok(Message::WithBody(val, body)) => {
                 trace!("got in_flight value with body");
                 let msg = Frame::Message { message: val, body: true };
-                try!(assert_send(&mut self.dispatch, msg));
+                assert_send(&mut self.dispatch, msg)?;
 
                 // TODO: don't panic maybe if this isn't true?
                 assert!(self.in_body.is_none());
@@ -295,7 +295,7 @@ impl<T> Pipeline<T> where T: Dispatch {
             Err(e) => {
                 trace!("got in_flight error");
                 let msg = Frame::Error { error: e };
-                try!(assert_send(&mut self.dispatch, msg));
+                assert_send(&mut self.dispatch, msg)?;
             }
         }
 
@@ -316,12 +316,12 @@ impl<T> Pipeline<T> where T: Dispatch {
 
                 match self.in_body.as_mut().unwrap().poll() {
                     Ok(Async::Ready(Some(chunk))) => {
-                        try!(assert_send(&mut self.dispatch,
-                                         Frame::Body { chunk: Some(chunk) }));
+                        assert_send(&mut self.dispatch,
+                                         Frame::Body { chunk: Some(chunk) })?;
                     }
                     Ok(Async::Ready(None)) => {
-                        try!(assert_send(&mut self.dispatch,
-                                         Frame::Body { chunk: None }));
+                        assert_send(&mut self.dispatch,
+                                         Frame::Body { chunk: None })?;
                         break;
                     }
                     Err(_) => {
@@ -340,7 +340,7 @@ impl<T> Pipeline<T> where T: Dispatch {
     }
 
     fn flush(&mut self) -> io::Result<()> {
-        self.is_flushed = try!(self.dispatch.poll_complete()).is_ready();
+        self.is_flushed = self.dispatch.poll_complete()?.is_ready();
 
         if let Some(ref mut out_body) = self.out_body {
             if out_body.poll_complete().is_ok() {
@@ -372,13 +372,13 @@ impl<T> Future for Pipeline<T> where T: Dispatch {
         self.dispatch.get_mut().inner.transport().tick();
 
         // First read off data from the socket
-        try!(self.read_out_frames());
+        self.read_out_frames()?;
 
         // Handle completed responses
-        try!(self.write_in_frames());
+        self.write_in_frames()?;
 
         // Try flushing buffered writes
-        try!(self.flush());
+        self.flush()?;
 
         // Clean shutdown of the pipeline server can happen when
         //
@@ -450,7 +450,7 @@ impl<T: fmt::Debug> fmt::Debug for DispatchSink<T> {
 }
 
 fn assert_send<S: Sink>(s: &mut S, item: S::SinkItem) -> Result<(), S::SinkError> {
-    match try!(s.start_send(item)) {
+    match s.start_send(item)? {
         AsyncSink::Ready => Ok(()),
         AsyncSink::NotReady(_) => {
             panic!("sink reported itself as ready after `poll_ready` but was \

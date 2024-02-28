@@ -23,7 +23,7 @@ mod lift {
     use std::io;
     use std::marker::PhantomData;
 
-    use streaming::pipeline::{Frame, Transport};
+    use crate::streaming::pipeline::{Frame, Transport};
     use futures::{Future, Stream, Sink, StartSend, Poll, Async, AsyncSink};
 
     // Lifts an implementation of RPC-style transport to streaming-style transport
@@ -55,7 +55,7 @@ mod lift {
                       -> StartSend<Self::SinkItem, io::Error> {
             if let Frame::Message { message, body } = request {
                 if !body {
-                    match try!(self.0.start_send(message)) {
+                    match self.0.start_send(message)? {
                         AsyncSink::Ready => return Ok(AsyncSink::Ready),
                         AsyncSink::NotReady(msg) => {
                             let msg = Frame::Message { message: msg, body: false };

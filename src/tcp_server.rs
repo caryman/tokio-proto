@@ -4,7 +4,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::thread;
 
-use BindServer;
+use crate::BindServer;
 use futures::stream::Stream;
 use futures::future::{Then, Future};
 use net2;
@@ -188,7 +188,7 @@ fn serve<P, Kind, F, S>(binder: Arc<P>, addr: SocketAddr, workers: usize, new_se
 
     let server = listener.incoming().for_each(move |(socket, _)| {
         // Create the service
-        let service = try!(new_service.new_service());
+        let service = new_service.new_service()?;
 
         // Bind it!
         binder.bind_server(&handle, socket, WrapService {
@@ -206,12 +206,12 @@ fn listener(addr: &SocketAddr,
             workers: usize,
             handle: &Handle) -> io::Result<TcpListener> {
     let listener = match *addr {
-        SocketAddr::V4(_) => try!(net2::TcpBuilder::new_v4()),
-        SocketAddr::V6(_) => try!(net2::TcpBuilder::new_v6()),
+        SocketAddr::V4(_) => net2::TcpBuilder::new_v4()?,
+        SocketAddr::V6(_) => net2::TcpBuilder::new_v6()?,
     };
-    try!(configure_tcp(workers, &listener));
-    try!(listener.reuse_address(true));
-    try!(listener.bind(addr));
+    configure_tcp(workers, &listener)?;
+    listener.reuse_address(true)?;
+    listener.bind(addr)?;
     listener.listen(1024).and_then(|l| {
         TcpListener::from_listener(l, addr, handle)
     })
@@ -222,7 +222,7 @@ fn configure_tcp(workers: usize, tcp: &net2::TcpBuilder) -> io::Result<()> {
     use net2::unix::*;
 
     if workers > 1 {
-        try!(tcp.reuse_port(true));
+        tcp.reuse_port(true);
     }
 
     Ok(())
